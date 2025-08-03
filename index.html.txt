@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式田野調查筆記表格</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 使用 Noto Sans TC 作為主要中文字體，Inter 作為英數備用 */
+        body { 
+            font-family: 'Noto Sans TC', 'Inter', sans-serif; 
+        }
+        /* 美化捲軸樣式 */
+        ::-webkit-scrollbar { 
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track { 
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: #a8a29e; /* stone-400 */
+            border-radius: 4px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: #78716c; /* stone-500 */
+        }
+        /* 標籤樣式 */
+        .tag {
+            display: inline-block;
+            background-color: #e0e7ff; /* indigo-100 */
+            color: #4338ca; /* indigo-700 */
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin: 2px;
+            font-weight: 500;
+        }
+        /* 讓 input-group 中的 label 和 input 垂直對齊 */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        /* Checkbox 樣式 */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .checkbox-label input {
+            margin-right: 0.5rem;
+        }
+        .action-btn {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-stone-900">團隊田野調查筆記</h1>
+            <p class="text-stone-600 mt-2">澎湖大航海時代民生歷史研究探查</p>
+        </header>
+
+        <main>
+            <!-- 新增筆記表單 -->
+            <section id="note-form-section" class="bg-white p-6 rounded-lg shadow-lg mb-8">
+                <h2 class="text-2xl font-semibold mb-6 border-b border-stone-200 pb-3"></h2>
+                <form id="note-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- 基本資料 -->
+                    <div class="input-group">
+                        <label for="record-date" class="mb-1 font-medium text-stone-700">記錄日期</label>
+                        <input type="date" id="record-date" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                    <div class="input-group">
+                        <label for="record-time" class="mb-1 font-medium text-stone-700">記錄時間</label>
+                        <input type="time" id="record-time" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                    <div class="input-group">
+                        <label for="recorder" class="mb-1 font-medium text-stone-700">記錄者</label>
+                        <select id="recorder" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                            <option>請選擇</option>
+                            <option>朱泓澄</option>
+                            <option>楊智翔</option>
+                            <option>陸秀儀</option>
+                            <option>楊馨媛</option>
+                            <option>吳盈萱</option>
+                        </select>
+                    </div>
+                    <div class="input-group md:col-span-2 lg:col-span-3">
+                        <label for="location" class="mb-1 font-medium text-stone-700">地點/空間</label>
+                        <input type="text" id="location" placeholder="例如：西嶼鄉二崁村，陳家古厝前廣場" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                    <div class="input-group md:col-span-2 lg:col-span-3">
+                        <label for="subject" class="mb-1 font-medium text-stone-700">事件主旨</label>
+                        <input type="text" id="subject" placeholder="為這筆紀錄下一個簡短的標題" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+
+                    <!-- 核心內容 -->
+                    <div class="input-group">
+                        <label for="note-type" class="mb-1 font-medium text-stone-700">筆記類型</label>
+                        <select id="note-type" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                            <option>觀察</option>
+                            <option>訪談</option>
+                            <option>閒聊</option>
+                            <option>文件分析</option>
+                            <option>個人心得</option>
+                        </select>
+                    </div>
+                    <div class="input-group md:col-span-2 lg:col-span-3">
+                        <label for="description" class="mb-1 font-medium text-stone-700">客觀描述 (事實)</label>
+                        <textarea id="description" rows="4" placeholder="如實記錄看到、聽到的事實，避免加入個人判斷" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
+                    </div>
+                    <div class="input-group md:col-span-2 lg:col-span-3">
+                        <label for="reflection" class="mb-1 font-medium text-stone-700">詮釋與反思 (觀點)</label>
+                        <textarea id="reflection" rows="4" placeholder="針對客觀描述提出你的解讀、感受、疑問或連結" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
+                    </div>
+                    <div class="input-group md:col-span-2 lg:col-span-3">
+                        <label for="quotes" class="mb-1 font-medium text-stone-700">關鍵引述</label>
+                        <textarea id="quotes" rows="2" placeholder="訪談對象說的重要語句" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
+                    </div>
+
+                    <!-- 關聯資料 -->
+                    <div class="input-group">
+                        <label for="persons" class="mb-1 font-medium text-stone-700">關鍵人物</label>
+                        <input type="text" id="persons" placeholder="用逗號分隔" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                    <div class="input-group">
+                        <label for="tags" class="mb-1 font-medium text-stone-700">關鍵字標籤</label>
+                        <input type="text" id="tags" placeholder="用逗號分隔" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                    <div class="input-group md:col-span-2 lg:col-span-3">
+                        <label class="mb-1 font-medium text-stone-700">相關檔案類型</label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2 mt-2">
+                            <label class="checkbox-label"><input type="checkbox" name="file-type" value="照片"> 照片</label>
+                            <label class="checkbox-label"><input type="checkbox" name="file-type" value="文獻資料"> 文獻資料</label>
+                            <label class="checkbox-label"><input type="checkbox" name="file-type" value="網址連結"> 網址連結</label>
+                            <label class="checkbox-label"><input type="checkbox" name="file-type" value="影像"> 影像</label>
+                            <label class="checkbox-label"><input type="checkbox" name="file-type" value="錄音"> 錄音</label>
+                        </div>
+                    </div>
+                     <div class="input-group md:col-span-2 lg:col-span-3">
+                        <label for="cloud-link" class="mb-1 font-medium text-stone-700">雲端連結 (請記得上傳檔案)</label>
+                        <input type="url" id="cloud-link" placeholder="將檔案存放在雲端後，貼上分享連結" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+
+                    <!-- 後續追蹤 -->
+                     <div class="input-group md:col-span-3">
+                        <label for="todo" class="mb-1 font-medium text-stone-700">待辦事項</label>
+                        <input type="text" id="todo" placeholder="記錄需要進一步確認或執行的任務" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                     <div class="input-group md:col-span-3">
+                        <label for="questions" class="mb-1 font-medium text-stone-700">待討論問題</label>
+                        <input type="text" id="questions" placeholder="記錄當下無法解答、需要團隊後續討論的問題" class="p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+
+                </form>
+                <div class="mt-6 text-right">
+                    <button id="add-note-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-transform transform hover:scale-105">
+                        新增筆記
+                    </button>
+                </div>
+            </section>
+
+            <!-- 筆記列表 -->
+            <section id="notes-table-section" class="bg-white p-6 rounded-lg shadow-lg">
+                 <h2 class="text-2xl font-semibold mb-4">所有筆記</h2>
+                 <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white text-sm">
+                        <thead class="bg-stone-50">
+                            <tr>
+                                <th class="p-3 text-left font-semibold text-stone-600">編號</th>
+                                <th class="p-3 text-left font-semibold text-stone-600">日期/時間</th>
+                                <th class="p-3 text-left font-semibold text-stone-600">地點</th>
+                                <th class="p-3 text-left font-semibold text-stone-600">記錄者</th>
+                                <th class="p-3 text-left font-semibold text-stone-600">主旨/類型</th>
+                                <th class="p-3 text-left font-semibold text-stone-600">描述/反思</th>
+                                <th class="p-3 text-left font-semibold text-stone-600">標籤</th>
+                                <th class="p-3 text-left font-semibold text-stone-600">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notes-table-body" class="divide-y divide-stone-200">
+                            <!-- Table rows will be injected here by JavaScript -->
+                        </tbody>
+                    </table>
+                 </div>
+            </section>
+        </main>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const form = document.getElementById('note-form');
+            const addNoteBtn = document.getElementById('add-note-btn');
+            const tableBody = document.getElementById('notes-table-body');
+
+            // Data storage
+            let notes = [];
+            let noteCounter = 0;
+
+            // --- FUNCTIONS ---
+
+            /**
+             * Renders a string of comma-separated tags into styled span elements.
+             * @param {string} tagString - The comma-separated string of tags.
+             * @returns {string} HTML string of styled tags.
+             */
+            function renderTags(tagString) {
+                if (!tagString) return '';
+                return tagString.split(',')
+                    .map(tag => tag.trim())
+                    .filter(tag => tag)
+                    .map(tag => `<span class="tag">${tag}</span>`)
+                    .join(' ');
+            }
+            
+            /**
+             * Copies text to the user's clipboard.
+             * @param {string} text - The text to copy.
+             * @param {HTMLElement} element - The button element that was clicked.
+             */
+            function copyToClipboard(text, element) {
+                // Use the modern clipboard API if available
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showCopySuccess(element);
+                    }).catch(err => {
+                        console.error('Async: Could not copy text: ', err);
+                    });
+                } else {
+                    // Fallback for older browsers or insecure contexts
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed"; // Avoid scrolling to bottom
+                    textArea.style.opacity = "0";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showCopySuccess(element);
+                    } catch (err) {
+                        console.error('Fallback: Oops, unable to copy', err);
+                    }
+                    document.body.removeChild(textArea);
+                }
+            }
+            
+            /**
+             * Provides visual feedback when text is copied.
+             * @param {HTMLElement} element - The button element that was clicked.
+             */
+            function showCopySuccess(element) {
+                const originalText = element.textContent;
+                element.textContent = '已複製！';
+                element.classList.add('bg-green-500', 'text-white');
+                setTimeout(() => {
+                    element.textContent = originalText;
+                    element.classList.remove('bg-green-500', 'text-white');
+                }, 1500);
+            }
+
+            /**
+             * Renders all notes from the 'notes' array into the table.
+             */
+            function renderTable() {
+                tableBody.innerHTML = ''; // Clear existing table rows
+                if (notes.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-stone-500">還沒有任何筆記，快新增一筆吧！</td></tr>`;
+                    return;
+                }
+
+                notes.forEach((note, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-stone-50 transition-colors';
+                    row.innerHTML = `
+                        <td class="p-3 font-semibold text-indigo-600">${note.id}</td>
+                        <td class="p-3 whitespace-nowrap">${note.date}<br>${note.time}</td>
+                        <td class="p-3 min-w-[200px]">${note.location}</td>
+                        <td class="p-3">${note.recorder}</td>
+                        <td class="p-3 min-w-[200px]">
+                            <p class="font-semibold">${note.subject}</p>
+                            <p class="text-stone-500">${note.type}</p>
+                        </td>
+                        <td class="p-3 min-w-[300px]">
+                            <details>
+                                <summary class="cursor-pointer font-medium text-stone-700">查看內容</summary>
+                                <div class="mt-2 p-2 bg-stone-50 rounded-md border border-stone-200">
+                                    <p class="font-semibold">客觀描述:</p>
+                                    <p class="mb-2 text-stone-600">${note.description || '無'}</p>
+                                    <p class="font-semibold">詮釋反思:</p>
+                                    <p class="mb-2 text-stone-600">${note.reflection || '無'}</p>
+                                    <p class="font-semibold">關鍵引述:</p>
+                                    <p class="mb-2 text-stone-600">${note.quotes || '無'}</p>
+                                    <p class="font-semibold">檔案類型:</p>
+                                    <p class="mb-2 text-stone-600">${note.fileTypes || '無'}</p>
+                                    <p class="font-semibold">雲端連結:</p>
+                                    <p class="mb-2 text-stone-600">${note.cloudLink ? `<a href="${note.cloudLink}" target="_blank" class="text-indigo-600 hover:underline">${note.cloudLink}</a>` : '無'}</p>
+                                    <p class="font-semibold">待辦事項:</p>
+                                    <p class="mb-2 text-stone-600">${note.todo || '無'}</p>
+                                    <p class="font-semibold">待討論問題:</p>
+                                    <p class="text-stone-600">${note.questions || '無'}</p>
+                                </div>
+                            </details>
+                        </td>
+                        <td class="p-3 min-w-[250px]">
+                            ${renderTags(note.persons)}
+                            ${renderTags(note.tags)}
+                        </td>
+                        <td class="p-3 whitespace-nowrap">
+                            <button data-index="${index}" class="copy-btn action-btn bg-blue-100 text-blue-700 hover:bg-blue-200">複製內容</button>
+                            <button data-index="${index}" class="delete-btn action-btn bg-red-100 text-red-700 hover:bg-red-200 ml-2">刪除</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            /**
+             * Handles the form submission to add a new note.
+             * @param {Event} e - The form submission event.
+             */
+            function addNote(e) {
+                e.preventDefault(); // Prevent page reload
+
+                // Generate a new ID
+                noteCounter++;
+                const newId = `PH2025-${String(noteCounter).padStart(3, '0')}`;
+
+                // Get selected file types
+                const fileTypes = Array.from(document.querySelectorAll('input[name="file-type"]:checked'))
+                                     .map(cb => cb.value)
+                                     .join(', ');
+
+                // Create a new note object from form values
+                const newNote = {
+                    id: newId,
+                    date: document.getElementById('record-date').value,
+                    time: document.getElementById('record-time').value,
+                    location: document.getElementById('location').value,
+                    recorder: document.getElementById('recorder').value,
+                    subject: document.getElementById('subject').value,
+                    type: document.getElementById('note-type').value,
+                    description: document.getElementById('description').value,
+                    reflection: document.getElementById('reflection').value,
+                    quotes: document.getElementById('quotes').value,
+                    persons: document.getElementById('persons').value,
+                    tags: document.getElementById('tags').value,
+                    fileTypes: fileTypes,
+                    cloudLink: document.getElementById('cloud-link').value,
+                    todo: document.getElementById('todo').value,
+                    questions: document.getElementById('questions').value,
+                };
+
+                notes.unshift(newNote); // Add to the beginning of the array
+                renderTable();
+                form.reset(); // Clear the form fields
+                
+                // Set date and time to current for the next entry
+                setInitialDateTime();
+            }
+            
+            /**
+             * Handles click events on the table body for actions like delete or copy.
+             * @param {Event} e - The click event.
+             */
+            function handleTableActions(e) {
+                const target = e.target;
+
+                // Handle Delete
+                if (target.classList.contains('delete-btn')) {
+                    const index = target.dataset.index;
+                    if (confirm(`確定要刪除筆記 #${notes[index].id} 嗎？`)) {
+                        notes.splice(index, 1);
+                        renderTable();
+                    }
+                }
+
+                // Handle Copy
+                if (target.classList.contains('copy-btn')) {
+                    const index = target.dataset.index;
+                    const note = notes[index];
+                    const textToCopy = `
+田野調查筆記備份
+====================
+
+編號: ${note.id}
+事件主旨: ${note.subject}
+--------------------
+
+基本資料
+- 日期與時間: ${note.date} ${note.time}
+- 地點/空間: ${note.location}
+- 記錄者: ${note.recorder}
+- 筆記類型: ${note.type}
+
+核心內容
+- 客觀描述 (事實):
+${note.description || '無'}
+
+- 詮釋與反思 (觀點):
+${note.reflection || '無'}
+
+- 關鍵引述:
+${note.quotes || '無'}
+
+關聯資料
+- 關鍵人物: ${note.persons || '無'}
+- 關鍵字標籤: ${note.tags || '無'}
+- 相關檔案類型: ${note.fileTypes || '無'}
+- 雲端連結: ${note.cloudLink || '無'}
+
+後續追蹤
+- 待辦事項: ${note.todo || '無'}
+- 待討論問題: ${note.questions || '無'}
+                    `;
+                    copyToClipboard(textToCopy.trim(), target);
+                }
+            }
+            
+            /**
+             * Sets the date and time inputs to the current date and time.
+             */
+            function setInitialDateTime() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+
+                document.getElementById('record-date').value = `${year}-${month}-${day}`;
+                document.getElementById('record-time').value = `${hours}:${minutes}`;
+            }
+
+            // --- INITIALIZATION ---
+
+            // Pre-populate with one example note
+            const exampleNote = {
+                id: 'PH2025-001',
+                date: '2025-08-03',
+                time: '15:02',
+                location: '西嶼鄉二崁村，陳家古厝前廣場',
+                recorder: '朱泓澄',
+                subject: '觀察村民午後互動',
+                type: '觀察',
+                description: '約下午三點，三五位長者聚集在古厝前的石椅上聊天。內容多為家常，偶爾談及天氣與漁獲。一位遊客上前詢問二崁協進會的位置，長者熱心指路。',
+                reflection: '此處不僅是村民的休憩空間，也自然地成為了遊客的非官方資訊站。長者們的互動模式展現了緊密的社群連結。可以思考這種自發性的社群功能如何與官方的社區營造計畫結合。',
+                quotes: '',
+                persons: '#陳伯伯, #阿春姨',
+                tags: '#社區日常, #高齡社交, #遊客互動',
+                fileTypes: '照片, 錄音',
+                cloudLink: 'https://example.com/shared-folder/ph2025-001',
+                todo: '下次訪談陳伯伯時，可詢問他對遊客增多的看法。',
+                questions: '年輕一代的村民是否也參與這樣的午後聚會？'
+            };
+            notes.push(exampleNote);
+            noteCounter = 1;
+
+            // Set initial form values and render the table
+            setInitialDateTime();
+            renderTable();
+
+            // Event Listeners
+            addNoteBtn.addEventListener('click', addNote);
+            tableBody.addEventListener('click', handleTableActions);
+        });
+    </script>
+</body>
+</html>
